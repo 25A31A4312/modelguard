@@ -1,0 +1,32 @@
+# Dependencies & build artifacts
+node_modules
+dist
+build
+coverage
+
+# Runtime persistent data & MLflow local stores
+data
+mlruns
+mlflow-data
+
+# Version control & editor metadata
+.git
+.gitignore
+.github
+.vscode
+.idea
+.aistudio
+.DS_Store
+Thumbs.db
+
+# Logs & local environment secrets
+*.log
+npm-debug.log*
+.env
+.env.*
+!.env.example
+
+# Non-runtime files not needed inside container build context
+test
+README.md
+docker-compose.yml

@@ -1,0 +1,21 @@
+node_modules/
+build/
+dist/
+coverage/
+data/
+mlruns/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Python temporary files
+__pycache__/
+*.py[cod]
+.venv/
+.aistudio/
