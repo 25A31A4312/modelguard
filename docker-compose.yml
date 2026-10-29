@@ -1,0 +1,70 @@
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.16.2
+    container_name: modelguard-mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --artifacts-destination /mlflow/artifacts
+      --serve-artifacts
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    networks:
+      - modelguard_net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  modelguard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: modelguard-app
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      MLFLOW_TRACKING_URI: "${MLFLOW_TRACKING_URI:-http://mlflow:5000}"
+      MLFLOW_EXPERIMENT_NAME: "${MLFLOW_EXPERIMENT_NAME:-modelguard-cv-drift-monitoring}"
+      DRIFT_MIN_SAMPLES: "${DRIFT_MIN_SAMPLES:-5}"
+      AUTO_RETRAIN_KS_ALPHA: "${AUTO_RETRAIN_KS_ALPHA:-0.05}"
+      RETRAIN_MIN_LABELED_SAMPLES: "${RETRAIN_MIN_LABELED_SAMPLES:-6}"
+      MODELGUARD_DATA_DIR: "/app/data"
+    volumes:
+      - modelguard_data:/app/data
+    networks:
+      - modelguard_net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+networks:
+  modelguard_net:
+    driver: bridge
+
+volumes:
+  mlflow_data:
+  modelguard_data:

@@ -1,0 +1,6 @@
+{
+  "name": "ModelGuard — Computer Vision Drift Monitoring & MLOps Platform",
+  "description": "Production MLOps platform for computer vision drift detection, real-time image inference, bounding-box object detection, alert management, and automated retraining pipelines.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
